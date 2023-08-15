@@ -1,6 +1,11 @@
 package com.example.myapplication.presentation
 
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.databinding.Bindable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,8 +15,12 @@ import com.example.myapplication.domain.use_case.ValidatePassword
 import com.example.myapplication.domain.use_case.ValidateRepeatedPassword
 import com.example.myapplication.domain.use_case.ValidateTerms
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.util.Random
+import java.util.RandomAccess
 
 class MainActivityViewModel(
     private val validateEmail: ValidateEmail = ValidateEmail(),
@@ -20,39 +29,51 @@ class MainActivityViewModel(
     private val validateTerms: ValidateTerms = ValidateTerms()
 ) : ViewModel() {
 
-    private var _registrationFormState = MutableLiveData(RegistrationFormState())
-    val registrationFormState: LiveData<RegistrationFormState> = _registrationFormState
+
+
+    var state by  mutableStateOf(RegistrationFormState())
 
     private val validationEventChannel = Channel<ValidationEvent>()
     val validationEvents = validationEventChannel.receiveAsFlow()
 
 
     fun onEvent(event: RegistrationFormEvent){
-        val currentState = _registrationFormState.value ?: RegistrationFormState()
+        val currentState = state
         when(event){
             is RegistrationFormEvent.AcceptTerms -> {
-                _registrationFormState.value = currentState.copy(acceptedTerms = event.isAccepted)
+                state = currentState.copy(acceptedTerms = event.isAccepted)
             }
             is RegistrationFormEvent.EmailChanged -> {
-                _registrationFormState.value = currentState.copy( email = event.email)
+                state = currentState.copy( email = event.email)
+
             }
             is RegistrationFormEvent.PasswordChanged -> {
-                _registrationFormState.value = currentState.copy(password = event.password)
+                state = currentState.copy(password = event.password)
             }
             is RegistrationFormEvent.RepeatedPasswordChanged -> {
-                _registrationFormState.value = currentState.copy(repeatedPassword = event.repeatedPassword)
+                state = currentState.copy(repeatedPassword = event.repeatedPassword)
             }
-            RegistrationFormEvent.Submit -> submitData()
+            is RegistrationFormEvent.OnBillerSelected -> {
+                val services = listOf(ServiceDetail("Fawri","FAWRI","AHM"),ServiceDetail("Fawri+","FP","FP1546"))
+                val services1 = listOf(ServiceDetail("Fawri","FAWRI","AHM"))
+                val actualService = listOf(services,services1)[(0..1).random()]
+                state = state.copy(selectedBiller = event.biller,services = actualService)
+
+            }
+            is RegistrationFormEvent.OnServiceSelected -> {
+                state = state.copy(selectedServiceDetail = event.service)
+            }
+            is RegistrationFormEvent.Submit -> submitData()
         }
     }
 
     private fun submitData() {
-        val emailResult = validateEmail.execute(_registrationFormState.value!!.email)
-        val passwordResult = validatePassword.execute(_registrationFormState.value!!.password)
+        val emailResult = validateEmail.execute(state.email)
+        val passwordResult = validatePassword.execute(state.password)
         val repeatedPasswordResult = validateRepeatedPassword.execute(
-            _registrationFormState.value!!.password, _registrationFormState.value!!.repeatedPassword
+            state.password, state.repeatedPassword
         )
-        val termsResult = validateTerms.execute(_registrationFormState.value!!.acceptedTerms)
+        val termsResult = validateTerms.execute(state.acceptedTerms)
 
         val hasError = listOf(
             emailResult,
@@ -60,7 +81,13 @@ class MainActivityViewModel(
             repeatedPasswordResult,
             termsResult
         ).any { !it.successful }
-        _registrationFormState.value = _registrationFormState.value!!.copy(
+        state = state.copy(
+            emailError = emailResult.errorMessage,
+            passwordError = passwordResult.errorMessage,
+            repeatedPasswordError = repeatedPasswordResult.errorMessage,
+            termsError = termsResult.errorMessage
+        )
+        state = state.copy(
             emailError = emailResult.errorMessage,
             passwordError = passwordResult.errorMessage,
             repeatedPasswordError = repeatedPasswordResult.errorMessage,
@@ -72,14 +99,16 @@ class MainActivityViewModel(
         viewModelScope.launch {
             validationEventChannel.send(ValidationEvent.Success)
         }
-
-
-
     }
+
+
+
 
 
     sealed class ValidationEvent {
         object Success: ValidationEvent()
     }
+
+
 
 }

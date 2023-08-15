@@ -9,5 +9,7 @@ sealed class RegistrationFormEvent {
 
     data class AcceptTerms(val isAccepted: Boolean) : RegistrationFormEvent()
 
+    data class OnBillerSelected(val biller: Biller): RegistrationFormEvent()
+    data class OnServiceSelected(val service: ServiceDetail): RegistrationFormEvent()
     object Submit: RegistrationFormEvent()
 }

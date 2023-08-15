@@ -1,32 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout>
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.myapplication.presentation.MainActivityViewModel" />
+    </data>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".presentation.MainActivity">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:visibility="gone">
 
-        <EditText
+        <androidx.compose.ui.platform.ComposeView
             android:id="@+id/emailEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email"
-            android:layout_marginVertical="4dp"
             />
-
-        <TextView
-            android:id="@+id/emailErrorTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#FF0000"
-            android:text="Email error message"
-            android:visibility="gone" />
 
         <EditText
             android:id="@+id/passwordEditText"
@@ -82,6 +79,15 @@
             android:text="Terms error message"
             android:visibility="gone" />
 
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/radioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            >
+
+        </androidx.compose.ui.platform.ComposeView>
+
         <Button
             android:id="@+id/submitButton"
             android:layout_width="wrap_content"
@@ -89,5 +95,10 @@
             android:layout_marginTop="16dp"
             android:text="Submit" />
     </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/screen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+</LinearLayout>
+</layout>

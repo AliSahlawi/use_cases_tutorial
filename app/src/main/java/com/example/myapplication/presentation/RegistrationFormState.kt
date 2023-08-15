@@ -8,5 +8,9 @@ data class RegistrationFormState (
     val repeatedPassword: String = "",
     val repeatedPasswordError: String? = null,
     val acceptedTerms: Boolean = false,
-    val termsError: String? = null
+    val termsError: String? = null,
+    val billers: List<Biller>? = null,
+    val services: List<ServiceDetail> ? = null,
+    val selectedBiller: Biller ? =null,
+    val selectedServiceDetail: ServiceDetail? = null
         )
